@@ -39,6 +39,7 @@ export { ServerConfig } from './config'
 export { Database } from './db'
 export { DiskBlobStore, MemoryBlobStore } from './storage'
 export { AppContext } from './context'
+export * as appMigrations from './app-migrations'
 
 export class PDS {
   public ctx: AppContext
