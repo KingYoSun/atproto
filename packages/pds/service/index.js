@@ -71,7 +71,7 @@ const main = async () => {
     config: cfg,
     imgInvalidator: cfInvalidator,
   })
-  await appMigrations.removeScenesMigration(pds.ctx)
+  // await appMigrations.removeScenesMigration(pds.ctx)
   await pds.start()
   // Graceful shutdown (see also https://aws.amazon.com/blogs/containers/graceful-shutdowns-with-ecs/)
   process.on('SIGTERM', async () => {
