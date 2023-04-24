@@ -181,6 +181,9 @@ export const runBsky = async (cfg: BskyConfig): Promise<BskyServerInfo> => {
     ...cfg,
     // Each test suite gets its own lock id for the repo subscription
     repoSubLockId: uniqueLockId(),
+    adminPassword: 'admin-pass',
+    labelerDid: 'did:example:labeler',
+    labelerKeywords: { label_me: 'test-label', label_me_2: 'test-label-2' },
   })
 
   const db = bsky.Database.postgres({
