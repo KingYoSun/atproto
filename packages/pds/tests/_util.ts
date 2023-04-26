@@ -108,10 +108,22 @@ export const runTestServer = async (
         })
       : Database.memory()
 
+  // Separate migration db on postgres in case migration changes some
+  // connection state that we need in the tests, e.g. "alter database ... set ..."
+  const migrationDb =
+    cfg.dbPostgresUrl !== undefined
+      ? Database.postgres({
+          url: cfg.dbPostgresUrl,
+          schema: cfg.dbPostgresSchema,
+        })
+      : db
   if (opts.migration) {
-    await db.migrateToOrThrow(opts.migration)
+    await migrationDb.migrateToOrThrow(opts.migration)
   } else {
-    await db.migrateToLatestOrThrow()
+    await migrationDb.migrateToLatestOrThrow()
+  }
+  if (migrationDb !== db) {
+    await migrationDb.close()
   }
 
   const blobstore =
@@ -193,6 +205,18 @@ export const forSnapshot = (obj: unknown) => {
     }
     if (str.match(/^\d+::bafy/)) {
       return constantKeysetCursor
+    }
+    if (str.match(/\/image\/[^/]+\/.+\/did:plc:[^/]+\/[^/]+@[\w]+$/)) {
+      // Match image urls
+      const match = str.match(
+        /\/image\/([^/]+)\/.+\/(did:plc:[^/]+)\/([^/]+)@[\w]+$/,
+      )
+      if (!match) return str
+      const [, sig, did, cid] = match
+      return str
+        .replace(sig, 'sig()')
+        .replace(did, take(users, did))
+        .replace(cid, take(cids, cid))
     }
     if (str.startsWith('pds-public-url-')) {
       return 'invite-code'
