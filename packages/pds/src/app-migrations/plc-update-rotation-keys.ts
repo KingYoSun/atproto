@@ -46,6 +46,7 @@ export const doMigration = async (
         },
       }))
     } catch {
+      console.log('retry at repoSigningKey: ', did)
       await plcClient.updateData(did, repoSigningKey, (lastOp) => ({
         ...lastOp,
         rotationKeys: [recoveryKey, plcRotationKey.did()],
