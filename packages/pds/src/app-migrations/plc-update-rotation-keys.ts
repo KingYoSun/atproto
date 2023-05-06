@@ -35,9 +35,12 @@ export const doMigration = async (
   const res = await db.db.selectFrom('did_handle').select('did').execute()
   const dids = res.map((row) => row.did)
   for (const did of dids) {
-    await plcClient.updateRotationKeys(did, repoSigningKey, [
-      recoveryKey,
-      plcRotationKey.did(),
-    ])
+    await plcClient.updateData(did, repoSigningKey, (lastOp) => ({
+      ...lastOp,
+      rotationsKeys: [recoveryKey, plcRotationKey.did()],
+      verificationMethods: {
+        atproto: repoSigningKey.did(),
+      },
+    }))
   }
 }
