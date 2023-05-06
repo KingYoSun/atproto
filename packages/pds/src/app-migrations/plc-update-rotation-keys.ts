@@ -33,7 +33,7 @@ export const doMigration = async (
   },
 ) => {
   const plcClient = new plc.Client(opts.plcUrl)
-  const { plcRotationKey, repoSigningKey, recoveryKey } = opts
+  const { oldSigningKey, plcRotationKey, repoSigningKey, recoveryKey } = opts
   const res = await db.db.selectFrom('did_handle').select('did').execute()
   const dids = res.map((row) => row.did)
   let failed = 0
@@ -41,10 +41,10 @@ export const doMigration = async (
   console.log(`All ${dids.length} users rotation keys will change`)
   for (const did of dids) {
     try {
-      await plcClient.updateData(did, repoSigningKey, (lastOp) => ({
-        ...lastOp,
-        rotationKeys: [recoveryKey, plcRotationKey.did()],
-      }))
+      await plcClient.updateRotationKeys(did, oldSigningKey, [
+        recoveryKey,
+        plcRotationKey.did(),
+      ])
       success++
       console.log(`success: ${success}`)
     } catch {
