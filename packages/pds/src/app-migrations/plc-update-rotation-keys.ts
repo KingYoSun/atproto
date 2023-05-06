@@ -37,7 +37,7 @@ export const doMigration = async (
   for (const did of dids) {
     await plcClient.updateData(did, repoSigningKey, (lastOp) => ({
       ...lastOp,
-      rotationsKeys: [recoveryKey, plcRotationKey.did()],
+      rotationKeys: [recoveryKey, plcRotationKey.did()],
       verificationMethods: {
         atproto: repoSigningKey.did(),
       },
