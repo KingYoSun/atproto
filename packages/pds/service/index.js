@@ -39,9 +39,6 @@ const main = async () => {
   const s3Blobstore = new S3BlobStore({ bucket: env.s3Bucket })
   const repoSigningKey = await Secp256k1Keypair.import(env.repoSigningKey)
   const plcRotationKey = await Secp256k1Keypair.import(env.plcRotationKey)
-  const oldSigningKey = await KmsKeypair.load({
-    keyId: env.plcRotationKeyId,
-  })
   let recoveryKey
   if (env.recoveryKeyId.startsWith('did:')) {
     recoveryKey = env.recoveryKeyId
@@ -70,13 +67,14 @@ const main = async () => {
     config: cfg,
     imgInvalidator: cfInvalidator,
   })
+  /*
   await appMigrations.plcRotationKeysMigration(db, {
     plcUrl: cfg.didPlcUrl,
-    oldSigningKey,
+    oldRotationKey,
     plcRotationKey,
-    repoSigningKey,
     recoveryKey,
   })
+  */
   await pds.start()
   // Graceful shutdown (see also https://aws.amazon.com/blogs/containers/graceful-shutdowns-with-ecs/)
   process.on('SIGTERM', async () => {
