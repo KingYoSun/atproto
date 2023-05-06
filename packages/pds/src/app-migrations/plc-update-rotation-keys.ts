@@ -49,8 +49,10 @@ export const doMigration = async (
         },
       }))
       success++
+      console.log(`success: ${success}`)
     } catch {
       failed++
+      console.log(`failed: ${failed}`)
     }
   }
   console.log(`all: ${dids.length}, failed: ${failed}, success: ${success}`)
