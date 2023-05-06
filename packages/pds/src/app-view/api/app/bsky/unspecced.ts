@@ -4,13 +4,22 @@ import { paginate } from '../../../../db/pagination'
 import AppContext from '../../../../context'
 import { FeedRow } from '../../../services/feed'
 import { FeedViewPost } from '../../../../lexicon/types/app/bsky/feed/defs'
+import { NotEmptyArray } from '@atproto/common'
+
+const NO_WHATS_HOT_LABELS: NotEmptyArray<string> = [
+  '!no-promote',
+  'corpse',
+  'self-harm',
+]
+
+const NSFW_LABELS = ['porn', 'sexual']
 
 // THIS IS A TEMPORARY UNSPECCED ROUTE
 export default function (server: Server, ctx: AppContext) {
   server.app.bsky.unspecced.getPopular({
     auth: ctx.accessVerifier,
     handler: async ({ params, auth }) => {
-      const { limit, cursor } = params
+      const { limit, cursor, includeNsfw } = params
       const requester = auth.credentials.did
       const db = ctx.db.db
       const { ref } = db.dynamic
@@ -19,10 +28,26 @@ export default function (server: Server, ctx: AppContext) {
       const actorService = ctx.services.appView.actor(ctx.db)
       const labelService = ctx.services.appView.label(ctx.db)
 
+      const labelsToFilter = includeNsfw
+        ? NO_WHATS_HOT_LABELS
+        : [...NO_WHATS_HOT_LABELS, ...NSFW_LABELS]
+
       const postsQb = feedService
         .selectPostQb()
         .leftJoin('post_agg', 'post_agg.uri', 'post.uri')
-        .where('post_agg.likeCount', '>=', 8)
+        .where('post_agg.likeCount', '>=', 12)
+        .whereNotExists((qb) =>
+          qb
+            .selectFrom('label')
+            .selectAll()
+            .where('val', 'in', labelsToFilter)
+            .where('neg', '=', 0)
+            .where((clause) =>
+              clause
+                .whereRef('label.uri', '=', ref('post.creator'))
+                .orWhereRef('label.uri', '=', ref('post.uri')),
+            ),
+        )
         .whereNotExists(
           db
             .selectFrom('mute')
