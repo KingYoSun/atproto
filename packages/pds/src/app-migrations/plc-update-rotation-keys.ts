@@ -36,6 +36,9 @@ export const doMigration = async (
   const { oldSigningKey, plcRotationKey, repoSigningKey, recoveryKey } = opts
   const res = await db.db.selectFrom('did_handle').select('did').execute()
   const dids = res.map((row) => row.did)
+  let failed = 0
+  let success = 0
+  console.log(`All ${dids.length} users rotation keys will change`)
   for (const did of dids) {
     try {
       await plcClient.updateData(did, oldSigningKey, (lastOp) => ({
@@ -45,15 +48,10 @@ export const doMigration = async (
           atproto: repoSigningKey.did(),
         },
       }))
+      success++
     } catch {
-      console.log('retry at repoSigningKey: ', did)
-      await plcClient.updateData(did, repoSigningKey, (lastOp) => ({
-        ...lastOp,
-        rotationKeys: [recoveryKey, plcRotationKey.did()],
-        verificationMethods: {
-          atproto: repoSigningKey.did(),
-        },
-      }))
+      failed++
     }
   }
+  console.log(`all: ${dids.length}, failed: ${failed}, success: ${success}`)
 }
