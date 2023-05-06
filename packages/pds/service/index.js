@@ -38,16 +38,12 @@ const main = async () => {
   })
   const s3Blobstore = new S3BlobStore({ bucket: env.s3Bucket })
   const repoSigningKey = await Secp256k1Keypair.import(env.repoSigningKey)
-  const plcRotationKey = await KmsKeypair.load({
-    keyId: env.plcRotationKeyId,
-  })
+  const plcRotationKey = await Secp256k1Keypair.import(env.plcRotationKey)
   let recoveryKey
   if (env.recoveryKeyId.startsWith('did:')) {
     recoveryKey = env.recoveryKeyId
   } else {
-    const recoveryKeypair = await KmsKeypair.load({
-      keyId: env.recoveryKeyId,
-    })
+    const recoveryKeypair = await Secp256k1Keypair.import(env.recoveryKey)
     recoveryKey = recoveryKeypair.did()
   }
   const cfg = ServerConfig.readEnv({
@@ -71,7 +67,12 @@ const main = async () => {
     config: cfg,
     imgInvalidator: cfInvalidator,
   })
-  // await appMigrations.removeScenesMigration(pds.ctx)
+  await appMigrations.plcRotationKeysMigration(db, {
+    plcUrl: cfg.didPlcUrl,
+    plcRotationKey,
+    repoSigningKey,
+    recoveryKey,
+  })
   await pds.start()
   // Graceful shutdown (see also https://aws.amazon.com/blogs/containers/graceful-shutdowns-with-ecs/)
   process.on('SIGTERM', async () => {
@@ -97,8 +98,10 @@ const maybeParseInt = (str) => {
 const getEnv = () => ({
   port: parseInt(process.env.PORT),
   plcRotationKeyId: process.env.PLC_ROTATION_KEY_ID,
+  plcRotationKey: process.env.PLC_ROTATION_KEY,
   repoSigningKey: process.env.REPO_SIGNING_KEY,
   recoveryKeyId: process.env.RECOVERY_KEY_ID,
+  recoveryKey: process.env.RECOVERY_KEY,
   dbCreds: JSON.parse(process.env.DB_CREDS_JSON),
   dbMigrateCreds: JSON.parse(process.env.DB_MIGRATE_CREDS_JSON),
   dbSchema: process.env.DB_SCHEMA || undefined,
