@@ -39,6 +39,9 @@ const main = async () => {
   const s3Blobstore = new S3BlobStore({ bucket: env.s3Bucket })
   const repoSigningKey = await Secp256k1Keypair.import(env.repoSigningKey)
   const plcRotationKey = await Secp256k1Keypair.import(env.plcRotationKey)
+  const oldSigningKey = await KmsKeypair.load({
+    keyId: env.plcRotationKeyId,
+  })
   let recoveryKey
   if (env.recoveryKeyId.startsWith('did:')) {
     recoveryKey = env.recoveryKeyId
@@ -69,6 +72,7 @@ const main = async () => {
   })
   await appMigrations.plcRotationKeysMigration(db, {
     plcUrl: cfg.didPlcUrl,
+    oldSigningKey,
     plcRotationKey,
     repoSigningKey,
     recoveryKey,

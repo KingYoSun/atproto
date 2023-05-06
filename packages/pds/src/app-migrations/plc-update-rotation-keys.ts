@@ -7,6 +7,7 @@ export const plcRotationKeysMigration = async (
   db: Database,
   opts: {
     plcUrl: string
+    oldSigningKey: Keypair
     plcRotationKey: Keypair
     repoSigningKey: Keypair
     recoveryKey: string
@@ -25,17 +26,18 @@ export const doMigration = async (
   db: Database,
   opts: {
     plcUrl: string
+    oldSigningKey: Keypair
     plcRotationKey: Keypair
     repoSigningKey: Keypair
     recoveryKey: string
   },
 ) => {
   const plcClient = new plc.Client(opts.plcUrl)
-  const { plcRotationKey, repoSigningKey, recoveryKey } = opts
+  const { oldSigningKey, plcRotationKey, repoSigningKey, recoveryKey } = opts
   const res = await db.db.selectFrom('did_handle').select('did').execute()
   const dids = res.map((row) => row.did)
   for (const did of dids) {
-    await plcClient.updateData(did, repoSigningKey, (lastOp) => ({
+    await plcClient.updateData(did, oldSigningKey, (lastOp) => ({
       ...lastOp,
       rotationKeys: [recoveryKey, plcRotationKey.did()],
       verificationMethods: {
