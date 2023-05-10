@@ -12,11 +12,12 @@ require('dd-trace/init') // Only works with commonjs
 // Tracer code above must come before anything else
 const path = require('path')
 const {
-  KmsKeypair,
-  S3BlobStore,
-  CloudfrontInvalidator,
-} = require('@atproto/aws')
-const { Database, ServerConfig, PDS, appMigrations } = require('@atproto/pds')
+  Database,
+  ServerConfig,
+  PDS,
+  DiskBlobStore,
+  appMigrations,
+} = require('@atproto/pds')
 const { Secp256k1Keypair } = require('@atproto/crypto')
 
 const main = async () => {
@@ -36,7 +37,11 @@ const main = async () => {
     poolMaxUses: env.dbPoolMaxUses,
     poolIdleTimeoutMs: env.dbPoolIdleTimeoutMs,
   })
-  const s3Blobstore = new S3BlobStore({ bucket: env.s3Bucket })
+  const pdsBlobstore = new DiskBlobStore(
+    env.blobStoreLoc,
+    env.blobStoreTmp,
+    null,
+  )
   const repoSigningKey = await Secp256k1Keypair.import(env.repoSigningKey)
   const plcRotationKey = await Secp256k1Keypair.import(env.plcRotationKey)
   let recoveryKey
@@ -54,18 +59,16 @@ const main = async () => {
       username: env.smtpUsername,
       password: env.smtpPassword,
     }),
-  })
-  const cfInvalidator = new CloudfrontInvalidator({
-    distributionId: env.cfDistributionId,
-    pathPrefix: cfg.imgUriEndpoint && new URL(cfg.imgUriEndpoint).pathname,
+    publicUrl: env.publicUrl,
+    blobCacheLocation: env.blobCacheLoc,
   })
   const pds = PDS.create({
     db,
-    blobstore: s3Blobstore,
+    blobstore: pdsBlobstore,
     repoSigningKey,
     plcRotationKey,
     config: cfg,
-    imgInvalidator: cfInvalidator,
+    imgInvalidator: null,
   })
   /*
   await appMigrations.plcRotationKeysMigration(db, {
@@ -114,6 +117,10 @@ const getEnv = () => ({
   smtpUsername: process.env.SMTP_USERNAME,
   smtpPassword: process.env.SMTP_PASSWORD,
   s3Bucket: process.env.S3_BUCKET_NAME,
+  blobStoreLoc: process.env.BLOBSTORE_LOC,
+  blobStoreTmp: process.env.BLOBSTORE_TMP,
+  blobCacheLoc: process.env.BLOB_CACHE_LOC,
+  publicUrl: process.env.PUBLIC_URL,
   cfDistributionId: process.env.CF_DISTRIBUTION_ID,
 })
 
