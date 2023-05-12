@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:14-alpine
+          image: postgres:14.6-alpine
           env:
             - name: POSTGRES_USER
               value: {{ .Values.db_user }}
@@ -25,21 +25,6 @@ spec:
           ports:
             - containerPort: 5432
           args: ['-c', 'log_statement=ddl', '-c', 'log_destination=stderr']
-          volumeMounts:
-            - name: atproto-postgresql-pvc
-              mountPath: /var/lib/postgresql/data
-      initContainers:
-        - name: init-postgres
-          image: postgres:14-alpine
-          command:
-            [
-              'sh',
-              '-c',
-              'if [ -f /var/lib/postgresql/data/postmaster.pid ]; then pg_ctl stop -m fast -D "/var/lib/postgresql/data"; else pg_resetwal /var/lib/postgresql/data; fi',
-            ]
-          securityContext:
-            runAsUser: 1000
-            fsGroup: 1000
           volumeMounts:
             - name: atproto-postgresql-pvc
               mountPath: /var/lib/postgresql/data
