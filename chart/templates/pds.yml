@@ -17,9 +17,9 @@ spec:
           image: '{{ .Values.pds_imageRepo }}:{{ .Values.pds_imageTag }}'
           envFrom:
             - configMapRef:
-              name: {{ include "atproto.fullname" . }}-env
+                name: {{ include "atproto.fullname" . }}-env
             - secretRef:
-              name: {{ include "atproto.fullname" . }}-env-secret
+                name: {{ include "atproto.fullname" . }}-env-secret
           volumeMounts:
             - name: atproto-pds-blobs-pvc
               mountPath: {{ .Values.pds_blobstore_loc }}
