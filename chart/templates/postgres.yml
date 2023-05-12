@@ -3,14 +3,14 @@ kind: Deployment
 metadata:
   name: atproto-postgres
   namespace: {{ .Values.namespace }}
-  labels: {{ - include "atproto.labels" . | nindent 4 }}
+  labels: {{- include "atproto.labels" . | nindent 4 }}
 spec:
   selector:
-    matchLabels: {{ - include "aptroto.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "aptroto.selectorLabels" . | nindent 6 }}
   replicas: 1
   template:
     metadata:
-      labels: {{ - include "atproto.selectorLabels" . | nindent 8 }}
+      labels: {{- include "atproto.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: postgres

@@ -3,14 +3,14 @@ kind: Deployment
 metadata:
   name: {{ include "atproto.fullname" . }}
   namespace: {{ .Values.namespace }}
-  labels: {{ - include "atproto.labels" . | nindent 4 }}
+  labels: {{- include "atproto.labels" . | nindent 4 }}
 spec:
   selector:
-    matchLabels: {{ - include "atproto.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "atproto.selectorLabels" . | nindent 6 }}
   replicas: 1
   template:
     metadata:
-      labels: {{ - include "atproto.selectorLabels" . | nindent 8 }}
+      labels: {{- include "atproto.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: atproto-pds
@@ -53,4 +53,4 @@ spec:
     - port: 3000
       protocol: TCP
       name: http
-  selector: {{ - include "atproto.selectorLabels" . | nindent 4 }}
+  selector: {{- include "atproto.selectorLabels" . | nindent 4 }}
