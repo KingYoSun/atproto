@@ -6,7 +6,7 @@ metadata:
   labels: {{- include "atproto.labels" . | nindent 4 }}
 spec:
   selector:
-    matchLabels: {{- include "aptroto.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "atproto.selectorLabels" . | nindent 6 }}
   replicas: 1
   template:
     metadata:
