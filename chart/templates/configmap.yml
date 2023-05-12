@@ -8,20 +8,8 @@ data:
   BLOBSTORE_TMP: {{ .Values.pds_blobstore_tmp }}
   BLOB_CACHE_LOC: {{ .Values.pds_blob_cache_loc }}
   PUBLIC_URL: {{ .Values.pds_url }}
-  DB_CREDS_JSON: |
-    {
-      "username": "{{ .Values.db_user }}",
-      "password": "{{ .Values.db_pass }}",
-      "host": "{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local",
-      "port": "5432"
-    }
-  DB_MIGRATE_CREDS_JSON: |
-    {
-      "username": "{{ .Values.db_user }}",
-      "password": "{{ .Values.db_pass }}",
-      "host": "{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local",
-      "port": "5432"
-    }
+  DB_CREDS_JSON: "{"username":"{{ .Values.db_user }}","password":"{{ .Values.db_pass }}","host":"{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local","port":"5432"}"
+  DB_MIGRATE_CREDS_JSON: "{"username":"{{ .Values.db_user }}","password":"{{ .Values.db_pass }}","host":"{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local","port":"5432"}"
   DB_POSTGRES_URL: {{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local/pds
   SMTP_HOST: {{ .Values.pds_smtp_host }}
   SMTP_USERNAME: {{ .Values.pds_smtp_username }}
