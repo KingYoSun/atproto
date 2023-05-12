@@ -31,13 +31,13 @@ metadata:
   name: atproto-pds-blobs
 spec:
   capacity:
-    storage: {{ .Values.pds-blobs_storage_capacity }}
+    storage: {{ .Values.pds_blobs_storage_capacity }}
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
   storageClassName: atproto-pds-blobs
   hostPath:
-    path: {{ .Values.pds-blobs_hostPath }}
+    path: {{ .Values.pds_blobs_hostPath }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -47,7 +47,7 @@ metadata:
 spec:
   resources:
     requests:
-      storage: {{ .Values.pds-blobs_storage_capacity }}
+      storage: {{ .Values.pds_blobs_storage_capacity }}
   accessModes:
     - ReadWriteMany
   storageClassName: atproto-pds-blobs
@@ -58,13 +58,13 @@ metadata:
   name: atproto-pds-blobs-tmp
 spec:
   capacity:
-    storage: {{ .Values.pds-blobs-tmp_storage_capacity }}
+    storage: {{ .Values.pds_blobs_tmp_storage_capacity }}
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
   storageClassName: atproto-pds-blobs-tmp
   hostPath:
-    path: {{ .Values.pds-blobs-tmp_hostPath }}
+    path: {{ .Values.pds_blobs_tmp_hostPath }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -74,7 +74,7 @@ metadata:
 spec:
   resources:
     requests:
-      storage: {{ .Values.pds-blobs-tmp_storage_capacity }}
+      storage: {{ .Values.pds_blobs_tmp_storage_capacity }}
   accessModes:
     - ReadWriteMany
   storageClassName: atproto-pds-blobs-tmp
@@ -85,13 +85,13 @@ metadata:
   name: atproto-pds-blobs-cache
 spec:
   capacity:
-    storage: {{ .Values.pds-blobs-cache_storage_capacity }}
+    storage: {{ .Values.pds_blobs_cache_storage_capacity }}
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
   storageClassName: atproto-pds-blobs-cache
   hostPath:
-    path: {{ .Values.pds-blobs-cache_hostPath }}
+    path: {{ .Values.pds_blobs_cache_hostPath }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -101,7 +101,7 @@ metadata:
 spec:
   resources:
     requests:
-      storage: {{ .Values.pds-blobs-cache_storage_capacity }}
+      storage: {{ .Values.pds_blobs_cache_storage_capacity }}
   accessModes:
     - ReadWriteMany
   storageClassName: atproto-pds-blobs-cache
