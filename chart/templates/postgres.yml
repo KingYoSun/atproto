@@ -2,26 +2,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: atproto-postgres
-  namespace: { { .Values.namespace } }
-  labels: { { - include "atproto.labels" . | nindent 4 } }
+  namespace: {{ .Values.namespace }}
+  labels: {{ - include "atproto.labels" . | nindent 4 }}
 spec:
   selector:
-    matchLabels: { { - include "aptroto.selectorLabels" . | nindent 6 } }
+    matchLabels: {{ - include "aptroto.selectorLabels" . | nindent 6 }}
   replicas: 1
   template:
     metadata:
-      labels: { { - include "atproto.selectorLabels" . | nindent 8 } }
+      labels: {{ - include "atproto.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: postgres
           image: postgres:14-alpine
           env:
             - name: POSTGRES_USER
-              value: { { .Values.db_user } }
+              value: {{ .Values.db_user }}
             - name: POSTGRES_PASSWORD
-              value: { { .Values.db_pass } }
+              value: {{ .Values.db_pass }}
             - name: POSTGRES_DB
-              value: { { .Values.db_name } }
+              value: {{ .Values.db_name }}
           ports:
             - containerPort: 5432
           args: ['-c', 'log_statement=ddl', '-c', 'log_destination=stderr']

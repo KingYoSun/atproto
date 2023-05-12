@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: { { include "atproto.fullname" . } }
-  namespace: { { .Values.namespace } }
-  labels: { { - include "atproto.labels" . | nindent 4 } }
+  name: {{ include "atproto.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels: {{ - include "atproto.labels" . | nindent 4 }}
 spec:
   selector:
-    matchLabels: { { - include "atproto.selectorLabels" . | nindent 6 } }
+    matchLabels: {{ - include "atproto.selectorLabels" . | nindent 6 }}
   replicas: 1
   template:
     metadata:
-      labels: { { - include "atproto.selectorLabels" . | nindent 8 } }
+      labels: {{ - include "atproto.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: atproto-pds
@@ -22,11 +22,11 @@ spec:
               name: {{ include "atproto.fullname" . }}-env-secret
           volumeMounts:
             - name: atproto-pds-blobs-pvc
-              mountPath: { { .Values.pds_blobstore_loc } }
+              mountPath: {{ .Values.pds_blobstore_loc }}
             - name: atproto-pds-blobs-tmp-pvc
-              mountPath: { { .Values.pds_blobstore_tmp } }
+              mountPath: {{ .Values.pds_blobstore_tmp }}
             - name: atproto-pds-blobs-cache-pvc
-              mountPath: { { .Values.pds_blob_cache_loc } }
+              mountPath: {{ .Values.pds_blob_cache_loc }}
           ports:
             - containerPort: 3000
       volumes:
@@ -43,8 +43,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: { { include "atproto.fullname" . } }
-  namespace: { { .Values.namespace } }
+  name: {{ include "atproto.fullname" . }}
+  namespace: {{ .Values.namespace }}
   annotations:
     dev.okteto.com/auto-ingress: 'true'
 spec:
@@ -53,4 +53,4 @@ spec:
     - port: 3000
       protocol: TCP
       name: http
-  selector: { { - include "atproto.selectorLabels" . | nindent 4 } }
+  selector: {{ - include "atproto.selectorLabels" . | nindent 4 }}
