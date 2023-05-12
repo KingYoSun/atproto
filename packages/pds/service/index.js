@@ -44,13 +44,8 @@ const main = async () => {
   )
   const repoSigningKey = await Secp256k1Keypair.import(env.repoSigningKey)
   const plcRotationKey = await Secp256k1Keypair.import(env.plcRotationKey)
-  let recoveryKey
-  if (env.recoveryKeyId.startsWith('did:')) {
-    recoveryKey = env.recoveryKeyId
-  } else {
-    const recoveryKeypair = await Secp256k1Keypair.import(env.recoveryKey)
-    recoveryKey = recoveryKeypair.did()
-  }
+  const recoveryKeypair = await Secp256k1Keypair.import(env.recoveryKey)
+  const recoveryKey = recoveryKeypair.did()
   const cfg = ServerConfig.readEnv({
     port: env.port,
     recoveryKey,
