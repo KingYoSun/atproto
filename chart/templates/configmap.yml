@@ -36,5 +36,5 @@ data:
   LOG_LEVEL: {{ .Values.pds_log_level }}
   SERVER_DID: {{ .Values.pds_server_did }}
   LABELER_DID: {{ .Values.pds_labeler_did }}
-  TLS: 1
+  TLS: "1"
   HOSTNAME: {{ .Values.pds_host_domain }}
