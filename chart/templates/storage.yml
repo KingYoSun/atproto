@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: atproto-postgresql
+spec:
+  capacity:
+    storage: { { .Values.db_storage_capacity } }
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: atproto-postgresql
+  hostPath:
+    path: { { .Values.db_hostPath } }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: atproto-postgresql
+  namespace: { { .Values.namespace } }
+spec:
+  resources:
+    requests:
+      storage: { { .Values.db_storage_capacity } }
+  accessModes:
+    - ReadWriteMany
+  storageClassName: atproto-postgresql
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: atproto-pds-blobs
+spec:
+  capacity:
+    storage: { { .Values.pds-blobs_storage_capacity } }
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: atproto-pds-blobs
+  hostPath:
+    path: { { .Values.pds-blobs_hostPath } }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: atproto-pds-blobs
+  namespace: { { .Values.namespace } }
+spec:
+  resources:
+    requests:
+      storage: { { .Values.pds-blobs_storage_capacity } }
+  accessModes:
+    - ReadWriteMany
+  storageClassName: atproto-pds-blobs
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: atproto-pds-blobs-tmp
+spec:
+  capacity:
+    storage: { { .Values.pds-blobs-tmp_storage_capacity } }
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: atproto-pds-blobs-tmp
+  hostPath:
+    path: { { .Values.pds-blobs-tmp_hostPath } }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: atproto-pds-blobs-tmp
+  namespace: { { .Values.namespace } }
+spec:
+  resources:
+    requests:
+      storage: { { .Values.pds-blobs-tmp_storage_capacity } }
+  accessModes:
+    - ReadWriteMany
+  storageClassName: atproto-pds-blobs-tmp
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: atproto-pds-blobs-cache
+spec:
+  capacity:
+    storage: { { .Values.pds-blobs-cache_storage_capacity } }
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: atproto-pds-blobs-cache
+  hostPath:
+    path: { { .Values.pds-blobs-cache_hostPath } }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: atproto-pds-blobs-cache
+  namespace: { { .Values.namespace } }
+spec:
+  resources:
+    requests:
+      storage: { { .Values.pds-blobs-cache_storage_capacity } }
+  accessModes:
+    - ReadWriteMany
+  storageClassName: atproto-pds-blobs-cache
