@@ -32,7 +32,7 @@ data:
   INVITE_REQUIRED: {{ .Values.pds_invite_required }}
   USER_INVITE_INTERVAL: {{ .Values.pds_user_invite_interval }}
   AVAILABLE_USER_DOMAINS: {{ .Values.pds_available_user_domains }}
-  LOG_ENABLED: true
+  LOG_ENABLED: "true"
   LOG_LEVEL: {{ .Values.pds_log_level }}
   SERVER_DID: {{ .Values.pds_server_did }}
   LABELER_DID: {{ .Values.pds_labeler_did }}
