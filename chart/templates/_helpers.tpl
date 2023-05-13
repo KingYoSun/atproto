@@ -43,11 +43,31 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Common labels(postgres)
+*/}}
+{{- define "atproto-postgres.labels" -}}
+helm.sh/chart: {{ include "atproto.chart" . }}
+{{ include "atproto-postgres.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
 Selector labels
 */}}
 {{- define "atproto.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "atproto.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Selector labels(postgres)
+*/}}
+{{- define "atproto-postgres.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "atproto.name" . }}-postgres
+app.kubernetes.io/instance: {{ .Release.Name }}-postgres
 {{- end }}
 
 {{/*
