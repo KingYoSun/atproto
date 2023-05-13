@@ -11,20 +11,10 @@ import { HandlerAuth } from '@atproto/xrpc-server'
 export interface QueryParams {}
 
 export interface InputSchema {
-  email: string
-  handle: string
-  did?: string
-  inviteCode?: string
-  password: string
-  recoveryKey?: string
-  [k: string]: unknown
-}
-
-export interface OutputSchema {
-  accessJwt: string
-  refreshJwt: string
-  handle: string
-  did: string
+  /** The handle or DID of the repo. */
+  repo: string
+  /** Compare and swap with the previous commit by cid. */
+  swapCommit?: string
   [k: string]: unknown
 }
 
@@ -33,25 +23,13 @@ export interface HandlerInput {
   body: InputSchema
 }
 
-export interface HandlerSuccess {
-  encoding: 'application/json'
-  body: OutputSchema
-}
-
 export interface HandlerError {
   status: number
   message?: string
-  error?:
-    | 'InvalidHandle'
-    | 'InvalidPassword'
-    | 'InvalidInviteCode'
-    | 'HandleNotAvailable'
-    | 'UnsupportedDomain'
-    | 'UnresolvableDid'
-    | 'IncompatibleDidDoc'
+  error?: 'InvalidSwap'
 }
 
-export type HandlerOutput = HandlerError | HandlerSuccess
+export type HandlerOutput = HandlerError | void
 export type Handler<HA extends HandlerAuth = never> = (ctx: {
   auth: HA
   params: QueryParams
