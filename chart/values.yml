@@ -22,6 +22,9 @@ pds_version: 0.0.0
 pds_invite_required: true
 pds_user_invite_interval: 604800000
 pds_log_level: info
+pds_db_pool_size: 50
+pds_db_pool_max_uses: 200
+pds_pool_idle_timeout_ms: 30000
 db_pass: NeedOverride
 cloudflared_token: NeedOverride
 pds_jwt_secret: NeedOverride
