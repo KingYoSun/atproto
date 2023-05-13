@@ -26,6 +26,6 @@ data:
   LABELER_DID: {{ .Values.pds_labeler_did }}
   TLS: "1"
   HOSTNAME: {{ .Values.pds_host_domain }}
-  DB_POOL_SIZE: {{ .Values.pds_db_pool_size }}
-  DB_POOL_MAX_USES: {{ .Values.pds_db_pool_max_uses }}
-  DB_POOL_IDLE_TIMEOUT_MS: {{ .Values.pds_pool_idle_timeout_ms }}
+  DB_POOL_SIZE: "{{ .Values.pds_db_pool_size }}"
+  DB_POOL_MAX_USES: "{{ .Values.pds_db_pool_max_uses }}"
+  DB_POOL_IDLE_TIMEOUT_MS: "{{ .Values.pds_pool_idle_timeout_ms }}""
