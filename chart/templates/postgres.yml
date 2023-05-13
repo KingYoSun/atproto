@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: atproto-postgres
+  name: {{ include "atproto.fullname" . }}-postgres
   namespace: {{ .Values.namespace }}
   labels: {{- include "atproto.labels" . | nindent 4 }}
 spec:
