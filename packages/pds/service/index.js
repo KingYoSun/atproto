@@ -17,6 +17,7 @@ const {
   PDS,
   DiskBlobStore,
   appMigrations,
+  makeAlgos
 } = require('@atproto/pds')
 const { Secp256k1Keypair } = require('@atproto/crypto')
 
@@ -57,6 +58,7 @@ const main = async () => {
     publicUrl: env.publicUrl,
     blobCacheLocation: env.blobCacheLoc,
   })
+  const algos = env.feedPublisherDid ? makeAlgos(env.feedPublisherDid) : {}
   const pds = PDS.create({
     db,
     blobstore: pdsBlobstore,
@@ -64,6 +66,7 @@ const main = async () => {
     plcRotationKey,
     config: cfg,
     imgInvalidator: null,
+    algos,
   })
   /*
   await appMigrations.plcRotationKeysMigration(db, {
@@ -117,6 +120,7 @@ const getEnv = () => ({
   blobCacheLoc: process.env.BLOB_CACHE_LOC,
   publicUrl: process.env.PUBLIC_URL,
   cfDistributionId: process.env.CF_DISTRIBUTION_ID,
+  feedPublisherDid: process.env.FEED_PUBLISHER_DID,
 })
 
 const maintainXrpcResource = (span, req) => {
