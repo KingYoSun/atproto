@@ -29,3 +29,4 @@ data:
   DB_POOL_SIZE: "{{ .Values.pds_db_pool_size }}"
   DB_POOL_MAX_USES: "{{ .Values.pds_db_pool_max_uses }}"
   DB_POOL_IDLE_TIMEOUT_MS: "{{ .Values.pds_pool_idle_timeout_ms }}"
+  FEED_GEN_DID: {{ .Values.pds_feed_gen_did }}

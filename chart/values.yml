@@ -41,3 +41,4 @@ pds_no_reply_address: NeedOverride
 pds_available_user_domains: NeedOverride
 pds_server_did: NeedOverride
 pds_labeler_did: NeedOverride
+pds_feed_gen_did: did:example:feedGen
