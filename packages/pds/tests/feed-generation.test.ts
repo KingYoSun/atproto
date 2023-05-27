@@ -163,7 +163,8 @@ describe('feed generation', () => {
       expect(resEven.data.isValid).toBe(true)
     })
 
-    it('handles an unsupported algo', async () => {
+    // @TODO temporarily skipping while external feedgens catch-up on describeFeedGenerator
+    it.skip('handles an unsupported algo', async () => {
       const resOdd = await agent.api.app.bsky.feed.getFeedGenerator(
         { feed: feedUriOdd },
         { headers: sc.getHeaders(sc.dids.bob) },
@@ -172,7 +173,8 @@ describe('feed generation', () => {
       expect(resOdd.data.isValid).toBe(false)
     })
 
-    it('handles an offline feed', async () => {
+    // @TODO temporarily skipping while external feedgens catch-up on describeFeedGenerator
+    it.skip('handles an offline feed', async () => {
       // make an invalid feed gen in bob's repo
       const allUriBob = AtUri.make(
         sc.dids.bob,
@@ -225,7 +227,7 @@ describe('feed generation', () => {
           {},
           { headers: sc.getHeaders(sc.dids.bob) },
         )
-      expect(resEven.data.feeds.map((f) => f.likeCount)).toEqual([2, 0, 0, 0])
+      expect(resEven.data.feeds.map((f) => f.likeCount)).toEqual([2, 0, 0])
     })
   })
 
@@ -292,13 +294,23 @@ describe('feed generation', () => {
       expect(feed.data['$auth']?.['iss']).toEqual(alice)
     })
 
+    it('provides timing info in server-timing header.', async () => {
+      const result = await agent.api.app.bsky.feed.getFeed(
+        { feed: feedUriEven },
+        { headers: sc.getHeaders(alice) },
+      )
+      expect(result.headers['server-timing']).toMatch(
+        /^skele;dur=\d+, hydr;dur=\d+$/,
+      )
+    })
+
     it('returns an upstream failure error when the feed is down.', async () => {
       await gen.close() // @NOTE must be last test
       const tryGetFeed = agent.api.app.bsky.feed.getFeed(
         { feed: feedUriEven },
         { headers: sc.getHeaders(alice) },
       )
-      await expect(tryGetFeed).rejects.toThrow('Feed unavailable')
+      await expect(tryGetFeed).rejects.toThrow('feed unavailable')
     })
   })
 
