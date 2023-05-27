@@ -1,6 +1,9 @@
 import { InvalidRequestError } from '@atproto/xrpc-server'
-import { getFeedGen } from '@atproto/did-resolver'
-import { AtpAgent } from '@atproto/api'
+import {
+  DidDocument,
+  PoorlyFormattedDidDocumentError,
+  getFeedGen,
+} from '@atproto/identity'
 import { Server } from '../../../../../lexicon'
 import AppContext from '../../../../../context'
 
@@ -20,35 +23,26 @@ export default function (server: Server, ctx: AppContext) {
       }
 
       const feedDid = feedInfo.feedDid
-      const resolved = await ctx.didResolver.resolveDid(feedDid)
+      let resolved: DidDocument | null
+      try {
+        resolved = await ctx.idResolver.did.resolve(feedDid)
+      } catch (err) {
+        if (err instanceof PoorlyFormattedDidDocumentError) {
+          throw new InvalidRequestError(`invalid did document: ${feedDid}`)
+        }
+        throw err
+      }
       if (!resolved) {
         throw new InvalidRequestError(
           `could not resolve did document: ${feedDid}`,
         )
       }
-      const fgEndpoint = await getFeedGen(resolved)
+
+      const fgEndpoint = getFeedGen(resolved)
       if (!fgEndpoint) {
-        throw new InvalidRequestError(`not a valid feed generator: ${feedDid}`)
-      }
-
-      let isOnline: boolean
-      let isValid: boolean
-
-      if (ctx.algos[feed]) {
-        isValid = true
-        isOnline = true
-      } else {
-        const agent = new AtpAgent({ service: fgEndpoint })
-        try {
-          const res = await agent.api.app.bsky.feed.describeFeedGenerator()
-          isOnline = true
-          isValid =
-            res.data.did === feedDid &&
-            res.data.feeds.some((f) => f.uri === feed)
-        } catch (err) {
-          isOnline = false
-          isValid = false
-        }
+        throw new InvalidRequestError(
+          `invalid feed generator service details in did document: ${feedDid}`,
+        )
       }
 
       const profiles = await feedService.getActorViews(
@@ -64,8 +58,9 @@ export default function (server: Server, ctx: AppContext) {
         encoding: 'application/json',
         body: {
           view: feedView,
-          isOnline,
-          isValid,
+          // @TODO temporarily hard-coding to true while external feedgens catch-up on describeFeedGenerator
+          isOnline: true,
+          isValid: true,
         },
       }
     },

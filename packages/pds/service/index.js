@@ -16,7 +16,17 @@ const {
   S3BlobStore,
   CloudfrontInvalidator,
 } = require('@atproto/aws')
+<<<<<<< HEAD
 const { Database, ServerConfig, PDS, appMigrations, makeAlgos } = require('@atproto/pds')
+=======
+const {
+  Database,
+  ServerConfig,
+  PDS,
+  ViewMaintainer,
+  makeAlgos,
+} = require('@atproto/pds')
+>>>>>>> main
 const { Secp256k1Keypair } = require('@atproto/crypto')
 
 const main = async () => {
@@ -25,9 +35,11 @@ const main = async () => {
   const migrateDb = Database.postgres({
     url: pgUrl(env.dbMigrateCreds),
     schema: env.dbSchema,
+    // We need one connection for the
+    // view-maintainer lock then one for anything else.
+    poolSize: 2,
   })
   await migrateDb.migrateToLatestOrThrow()
-  await migrateDb.close()
   // Use lower-credentialed user to run the app
   const db = Database.postgres({
     url: pgUrl(env.dbCreds),
@@ -74,16 +86,30 @@ const main = async () => {
     algos,
   })
   // await appMigrations.removeScenesMigration(pds.ctx)
+  const viewMaintainer = new ViewMaintainer(migrateDb)
+  const viewMaintainerRunning = viewMaintainer.run()
   await pds.start()
   // Graceful shutdown (see also https://aws.amazon.com/blogs/containers/graceful-shutdowns-with-ecs/)
   process.on('SIGTERM', async () => {
     await pds.destroy()
+    viewMaintainer.destroy()
+    await viewMaintainerRunning
+    await migrateDb.close()
   })
 }
 
-const pgUrl = ({ username, password, host, port }) => {
+const pgUrl = ({
+  username = 'postgres',
+  password = 'postgres',
+  host = '0.0.0.0',
+  port = '5432',
+  database = 'postgres',
+  sslmode,
+}) => {
   const enc = encodeURIComponent
-  return `postgresql://${username}:${enc(password)}@${host}:${port}/postgres`
+  return `postgresql://${username}:${enc(
+    password,
+  )}@${host}:${port}/${database}${sslmode ? `?sslmode=${enc(sslmode)}` : ''}`
 }
 
 const smtpUrl = ({ username, password, host }) => {
