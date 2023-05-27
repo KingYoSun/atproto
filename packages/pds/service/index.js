@@ -16,17 +16,14 @@ const {
   S3BlobStore,
   CloudfrontInvalidator,
 } = require('@atproto/aws')
-<<<<<<< HEAD
-const { Database, ServerConfig, PDS, appMigrations, makeAlgos } = require('@atproto/pds')
-=======
 const {
   Database,
   ServerConfig,
   PDS,
+  appMigrations,
   ViewMaintainer,
   makeAlgos,
 } = require('@atproto/pds')
->>>>>>> main
 const { Secp256k1Keypair } = require('@atproto/crypto')
 
 const main = async () => {
