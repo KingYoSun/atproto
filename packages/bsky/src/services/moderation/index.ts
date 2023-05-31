@@ -81,8 +81,18 @@ export class ModerationService {
     actionType?: string
     limit: number
     cursor?: string
+    ignoreSubjects?: string[]
+    reverse?: boolean
   }): Promise<ModerationReportRow[]> {
-    const { subject, resolved, actionType, limit, cursor } = opts
+    const {
+      subject,
+      resolved,
+      actionType,
+      limit,
+      cursor,
+      ignoreSubjects,
+      reverse = false,
+    } = opts
     const { ref } = this.db.db.dynamic
     let builder = this.db.db.selectFrom('moderation_report')
     if (subject) {
@@ -92,6 +102,14 @@ export class ModerationService {
           .orWhere('subjectUri', '=', subject)
       })
     }
+    if (ignoreSubjects?.length) {
+      builder = builder.where((qb) => {
+        return qb
+          .where('subjectDid', 'not in', ignoreSubjects)
+          .where('subjectUri', 'not in', ignoreSubjects)
+      })
+    }
+
     if (resolved !== undefined) {
       const resolutionsQuery = this.db.db
         .selectFrom('moderation_report_resolution')
@@ -128,11 +146,11 @@ export class ModerationService {
       if (isNaN(cursorNumeric)) {
         throw new InvalidRequestError('Malformed cursor')
       }
-      builder = builder.where('id', '<', cursorNumeric)
+      builder = builder.where('id', reverse ? '>' : '<', cursorNumeric)
     }
     return await builder
       .selectAll()
-      .orderBy('id', 'desc')
+      .orderBy('id', reverse ? 'asc' : 'desc')
       .limit(limit)
       .execute()
   }

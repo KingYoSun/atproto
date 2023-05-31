@@ -7,7 +7,15 @@ export default function (server: Server, ctx: AppContext) {
     auth: adminVerifier(ctx.cfg.adminPassword),
     handler: async ({ params }) => {
       const { db, services } = ctx
-      const { subject, resolved, actionType, limit = 50, cursor } = params
+      const {
+        subject,
+        resolved,
+        actionType,
+        limit = 50,
+        cursor,
+        ignoreSubjects,
+        reverse = false,
+      } = params
       const moderationService = services.moderation(db)
       const results = await moderationService.getReports({
         subject,
@@ -15,6 +23,8 @@ export default function (server: Server, ctx: AppContext) {
         actionType,
         limit,
         cursor,
+        ignoreSubjects,
+        reverse,
       })
       return {
         encoding: 'application/json',
