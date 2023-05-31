@@ -10,15 +10,15 @@ import { HandlerAuth } from '@atproto/xrpc-server'
 import * as AppBskyFeedDefs from './defs'
 
 export interface QueryParams {
-  limit: number
-  cursor?: string
+  feed: string
 }
 
 export type InputSchema = undefined
 
 export interface OutputSchema {
-  cursor?: string
-  feeds: AppBskyFeedDefs.GeneratorView[]
+  view: AppBskyFeedDefs.GeneratorView
+  isOnline: boolean
+  isValid: boolean
   [k: string]: unknown
 }
 
@@ -27,6 +27,7 @@ export type HandlerInput = undefined
 export interface HandlerSuccess {
   encoding: 'application/json'
   body: OutputSchema
+  headers?: { [key: string]: string }
 }
 
 export interface HandlerError {

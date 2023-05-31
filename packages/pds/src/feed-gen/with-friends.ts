@@ -16,6 +16,9 @@ const handler: AlgoHandler = async (
 
   const { ref } = ctx.db.db.dynamic
 
+  // @NOTE use of getFeedDateThreshold() not currently beneficial to this feed
+  const keyset = new FeedKeyset(ref('feed_item.sortAt'), ref('feed_item.cid'))
+
   let postsQb = feedService
     .selectFeedItemQb()
     .innerJoin('post_agg', 'post_agg.uri', 'feed_item.uri')
@@ -32,7 +35,6 @@ const handler: AlgoHandler = async (
     )
     .whereNotExists(graphService.blockQb(requester, [ref('post.creator')]))
 
-  const keyset = new FeedKeyset(ref('feed_item.sortAt'), ref('feed_item.cid'))
   postsQb = paginate(postsQb, { limit, cursor, keyset })
 
   const feedItems = await postsQb.execute()
