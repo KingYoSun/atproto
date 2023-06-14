@@ -11,9 +11,8 @@ import events from 'events'
 import { createTransport } from 'nodemailer'
 import * as crypto from '@atproto/crypto'
 import { BlobStore } from '@atproto/repo'
-import { AppViewIndexer } from './app-view/indexer'
+import * as appviewConsumers from './app-view/event-stream/consumers'
 import inProcessAppView from './app-view/api'
-import proxiedAppView from './app-view/proxied'
 import API from './api'
 import * as basicRoutes from './basic-routes'
 import * as wellKnown from './well-known'
@@ -30,7 +29,7 @@ import { BlobDiskCache, ImageProcessingServer } from './image/server'
 import { createServices } from './services'
 import { createHttpTerminator, HttpTerminator } from 'http-terminator'
 import AppContext from './context'
-import Sequencer from './sequencer'
+import { Sequencer, SequencerLeader } from './sequencer'
 import {
   ImageInvalidator,
   ImageProcessingServerInvalidator,
@@ -40,6 +39,7 @@ import { BackgroundQueue } from './event-stream/background-queue'
 import DidSqlCache from './did-cache'
 import { IdResolver } from '@atproto/identity'
 import { MountedAlgos } from './feed-gen/types'
+import { Crawlers } from './crawlers'
 
 export type { ServerConfigValues } from './config'
 export { ServerConfig } from './config'
@@ -52,7 +52,6 @@ export { makeAlgos } from './feed-gen'
 
 export class PDS {
   public ctx: AppContext
-  public appViewIndexer: AppViewIndexer
   public app: express.Application
   public server?: http.Server
   private terminator?: HttpTerminator
@@ -61,11 +60,10 @@ export class PDS {
   constructor(opts: {
     ctx: AppContext
     app: express.Application
-    appViewIndexer: AppViewIndexer
+    sequencerLeader: SequencerLeader
   }) {
     this.ctx = opts.ctx
     this.app = opts.app
-    this.appViewIndexer = opts.appViewIndexer
   }
 
   static create(opts: {
@@ -101,6 +99,10 @@ export class PDS {
 
     const messageDispatcher = new MessageDispatcher()
     const sequencer = new Sequencer(db)
+    const sequencerLeader = new SequencerLeader(
+      db,
+      config.sequencerLeaderLockId,
+    )
 
     const mailTransport =
       config.emailSmtpUrl !== undefined
@@ -143,6 +145,10 @@ export class PDS {
     )
 
     const backgroundQueue = new BackgroundQueue(db)
+    const crawlers = new Crawlers(
+      config.hostname,
+      config.crawlersToNotify ?? [],
+    )
 
     let labeler: Labeler
     if (config.hiveApiKey) {
@@ -172,6 +178,7 @@ export class PDS {
       imgInvalidator,
       labeler,
       backgroundQueue,
+      crawlers,
     })
 
     const ctx = new AppContext({
@@ -185,15 +192,15 @@ export class PDS {
       auth,
       messageDispatcher,
       sequencer,
+      sequencerLeader,
       labeler,
       services,
       mailer,
       imgUriBuilder,
       backgroundQueue,
+      crawlers,
       algos,
     })
-
-    const appViewIndexer = new AppViewIndexer(ctx)
 
     let server = createServer({
       validateResponse: config.debugMode,
@@ -205,11 +212,7 @@ export class PDS {
     })
 
     server = API(server, ctx)
-    if (ctx.cfg.bskyAppViewEndpoint && ctx.cfg.bskyAppViewDid) {
-      server = proxiedAppView(server, ctx)
-    } else {
-      server = inProcessAppView(server, ctx)
-    }
+    server = inProcessAppView(server, ctx)
 
     app.use(basicRoutes.createRouter(ctx))
     app.use(wellKnown.createRouter(ctx))
@@ -219,7 +222,7 @@ export class PDS {
     return new PDS({
       ctx,
       app,
-      appViewIndexer,
+      sequencerLeader,
     })
   }
 
@@ -245,7 +248,8 @@ export class PDS {
         )
       }, 10000)
     }
-    this.appViewIndexer.start()
+    appviewConsumers.listen(this.ctx)
+    this.ctx.sequencerLeader.run()
     await this.ctx.sequencer.start()
     await this.ctx.db.startListeningToChannels()
     const server = this.app.listen(this.ctx.cfg.port)
@@ -257,7 +261,7 @@ export class PDS {
   }
 
   async destroy(): Promise<void> {
-    this.appViewIndexer.destroy()
+    await this.ctx.sequencerLeader.destroy()
     await this.terminator?.terminate()
     await this.ctx.backgroundQueue.destroy()
     await this.ctx.db.close()
