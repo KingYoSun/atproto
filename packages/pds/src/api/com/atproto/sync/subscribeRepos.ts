@@ -27,7 +27,7 @@ export default function (server: Server, ctx: AppContext) {
           message: 'Requested cursor exceeded limit. Possibly missing events',
         }
       }
-      if (curr && cursor > curr.seq) {
+      if (cursor > (curr?.seq ?? 0)) {
         throw new InvalidRequestError('Cursor in the future.', 'FutureCursor')
       }
     }
@@ -43,6 +43,13 @@ export default function (server: Server, ctx: AppContext) {
       } else if (evt.type === 'handle') {
         yield {
           $type: '#handle',
+          seq: evt.seq,
+          time: evt.time,
+          ...evt.evt,
+        }
+      } else if (evt.type === 'tombstone') {
+        yield {
+          $type: '#tombstone',
           seq: evt.seq,
           time: evt.time,
           ...evt.evt,
