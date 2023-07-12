@@ -42,6 +42,8 @@ export class TestPds {
       serverDid,
       recoveryKey: recoveryKey.did(),
       adminPassword: 'admin-pass',
+      moderatorPassword: 'moderator-pass',
+      triagePassword: 'triage-pass',
       inviteRequired: false,
       userInviteInterval: null,
       userInviteEpoch: 0,
@@ -64,6 +66,7 @@ export class TestPds {
       labelerKeywords: { label_me: 'test-label', label_me_2: 'test-label-2' },
       feedGenDid: 'did:example:feedGen',
       dbTxLockNonce: await randomStr(32, 'base32'),
+      bskyAppViewProxy: !!cfg.bskyAppViewEndpoint,
       ...cfg,
     })
 
@@ -77,7 +80,11 @@ export class TestPds {
       : pds.Database.memory()
     await db.migrateToLatestOrThrow()
 
-    if (config.bskyAppViewEndpoint) {
+    if (
+      config.bskyAppViewEndpoint &&
+      config.bskyAppViewProxy &&
+      !cfg.enableInProcessAppView
+    ) {
       // Disable communication to app view within pds
       MessageDispatcher.prototype.send = async () => {}
     }
@@ -91,6 +98,9 @@ export class TestPds {
     })
 
     await server.start()
+
+    // we refresh label cache by hand in `processAll` instead of on a timer
+    server.ctx.labelCache.stop()
     return new TestPds(url, port, server)
   }
 
@@ -102,20 +112,28 @@ export class TestPds {
     return new AtpAgent({ service: `http://localhost:${this.port}` })
   }
 
-  adminAuth(): string {
+  adminAuth(role: 'admin' | 'moderator' | 'triage' = 'admin'): string {
+    const password =
+      role === 'triage'
+        ? this.ctx.cfg.triagePassword
+        : role === 'moderator'
+        ? this.ctx.cfg.moderatorPassword
+        : this.ctx.cfg.adminPassword
     return (
       'Basic ' +
-      ui8.toString(
-        ui8.fromString(`admin:${this.ctx.cfg.adminPassword}`, 'utf8'),
-        'base64pad',
-      )
+      ui8.toString(ui8.fromString(`admin:${password}`, 'utf8'), 'base64pad')
     )
   }
 
-  adminAuthHeaders() {
+  adminAuthHeaders(role?: 'admin' | 'moderator' | 'triage') {
     return {
-      authorization: this.adminAuth(),
+      authorization: this.adminAuth(role),
     }
+  }
+
+  async processAll() {
+    await this.ctx.backgroundQueue.processAll()
+    await this.ctx.labelCache.fullRefresh()
   }
 
   async close() {

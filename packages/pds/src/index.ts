@@ -21,7 +21,7 @@ import Database from './db'
 import { ServerAuth } from './auth'
 import * as error from './error'
 import compression from './util/compression'
-import { dbLogger, loggerMiddleware } from './logger'
+import { dbLogger, loggerMiddleware, seqLogger } from './logger'
 import { ServerConfig } from './config'
 import { ServerMailer } from './mailer'
 import { createServer } from './lexicon'
@@ -41,6 +41,7 @@ import { BackgroundQueue } from './event-stream/background-queue'
 import DidSqlCache from './did-cache'
 import { MountedAlgos } from './feed-gen/types'
 import { Crawlers } from './crawlers'
+import { LabelCache } from './label-cache'
 
 export type { ServerConfigValues } from './config'
 export { ServerConfig } from './config'
@@ -57,6 +58,7 @@ export class PDS {
   public server?: http.Server
   private terminator?: HttpTerminator
   private dbStatsInterval?: NodeJS.Timer
+  private sequencerStatsInterval?: NodeJS.Timer
 
   constructor(opts: {
     ctx: AppContext
@@ -89,6 +91,7 @@ export class PDS {
       jwtSecret: config.jwtSecret,
       adminPass: config.adminPassword,
       moderatorPass: config.moderatorPassword,
+      triagePass: config.triagePassword,
     })
 
     const didCache = new DidSqlCache(
@@ -96,7 +99,11 @@ export class PDS {
       config.didCacheStaleTTL,
       config.didCacheMaxTTL,
     )
-    const idResolver = new IdResolver({ plcUrl: config.didPlcUrl, didCache })
+    const idResolver = new IdResolver({
+      plcUrl: config.didPlcUrl,
+      didCache,
+      backupNameservers: config.handleResolveNameservers,
+    })
 
     const messageDispatcher = new MessageDispatcher()
     const sequencer = new Sequencer(db)
@@ -172,6 +179,8 @@ export class PDS {
       })
     }
 
+    const labelCache = new LabelCache(db)
+
     const services = createServices({
       repoSigningKey,
       messageDispatcher,
@@ -179,6 +188,7 @@ export class PDS {
       imgUriBuilder,
       imgInvalidator,
       labeler,
+      labelCache,
       backgroundQueue,
       crawlers,
     })
@@ -196,6 +206,7 @@ export class PDS {
       sequencer,
       sequencerLeader,
       labeler,
+      labelCache,
       services,
       mailer,
       imgUriBuilder,
@@ -250,10 +261,19 @@ export class PDS {
         )
       }, 10000)
     }
+    this.sequencerStatsInterval = setInterval(() => {
+      if (this.ctx.sequencerLeader.isLeader) {
+        seqLogger.info(
+          { seq: this.ctx.sequencerLeader.peekSeqVal() },
+          'sequencer leader stats',
+        )
+      }
+    }, 500)
     appviewConsumers.listen(this.ctx)
     this.ctx.sequencerLeader.run()
     await this.ctx.sequencer.start()
     await this.ctx.db.startListeningToChannels()
+    this.ctx.labelCache.start()
     const server = this.app.listen(this.ctx.cfg.port)
     this.server = server
     this.server.keepAliveTimeout = 90000
@@ -263,11 +283,13 @@ export class PDS {
   }
 
   async destroy(): Promise<void> {
+    this.ctx.labelCache.stop()
     await this.ctx.sequencerLeader.destroy()
     await this.terminator?.terminate()
     await this.ctx.backgroundQueue.destroy()
     await this.ctx.db.close()
     clearInterval(this.dbStatsInterval)
+    clearInterval(this.sequencerStatsInterval)
   }
 }
 
