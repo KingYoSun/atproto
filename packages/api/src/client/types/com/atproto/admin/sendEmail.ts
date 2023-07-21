@@ -6,24 +6,25 @@ import { ValidationResult, BlobRef } from '@atproto/lexicon'
 import { isObj, hasProp } from '../../../../util'
 import { lexicons } from '../../../../lexicons'
 import { CID } from 'multiformats/cid'
-import * as AppBskyFeedDefs from '../feed/defs'
 
-export interface QueryParams {
-  limit?: number
-  cursor?: string
-  query?: string
+export interface QueryParams {}
+
+export interface InputSchema {
+  recipientDid: string
+  content: string
+  subject?: string
+  [k: string]: unknown
 }
 
-export type InputSchema = undefined
-
 export interface OutputSchema {
-  cursor?: string
-  feeds: AppBskyFeedDefs.GeneratorView[]
+  sent: boolean
   [k: string]: unknown
 }
 
 export interface CallOptions {
   headers?: Headers
+  qp?: QueryParams
+  encoding: 'application/json'
 }
 
 export interface Response {
