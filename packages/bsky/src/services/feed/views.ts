@@ -214,7 +214,7 @@ export class FeedViews {
       blocks[uri]?.reply
     ) {
       if (!usePostViewUnion) return
-      return this.blockedPost(uri)
+      return this.blockedPost(post)
     }
     return {
       $type: 'app.bsky.feed.defs#postView',
@@ -222,11 +222,20 @@ export class FeedViews {
     }
   }
 
-  blockedPost(uri: string) {
+  blockedPost(post: PostView) {
     return {
       $type: 'app.bsky.feed.defs#blockedPost',
-      uri: uri,
+      uri: post.uri,
       blocked: true as const,
+      author: {
+        did: post.author.did,
+        viewer: post.author.viewer
+          ? {
+              blockedBy: post.author.viewer?.blockedBy,
+              blocking: post.author.viewer?.blocking,
+            }
+          : undefined,
+      },
     }
   }
 
@@ -282,12 +291,23 @@ export class FeedViews {
       return {
         $type: 'app.bsky.embed.record#viewNotFound',
         uri,
+        notFound: true,
       }
     }
     if (post.author.viewer?.blocking || post.author.viewer?.blockedBy) {
       return {
         $type: 'app.bsky.embed.record#viewBlocked',
         uri,
+        blocked: true,
+        author: {
+          did: post.author.did,
+          viewer: post.author.viewer
+            ? {
+                blockedBy: post.author.viewer?.blockedBy,
+                blocking: post.author.viewer?.blocking,
+              }
+            : undefined,
+        },
       }
     }
     return {
