@@ -106,6 +106,16 @@ export class IndexerSubscription {
     }
   }
 
+  async requestReprocess(did: string) {
+    await this.repoQueue.add(did, async () => {
+      try {
+        await this.indexingSvc.indexRepo(did, undefined)
+      } catch (err) {
+        log.error({ did }, 'failed to reprocess repo')
+      }
+    })
+  }
+
   async destroy() {
     this.destroyed = true
     await this.repoQueue.destroy()

@@ -9,6 +9,7 @@ import { toSimplifiedISOSafe } from '../util'
 import { PrimaryDatabase } from '../../../db'
 import { countAll, excluded } from '../../../db/util'
 import { BackgroundQueue } from '../../../background'
+import { NotificationServer } from '../../../notifications'
 
 const lexId = lex.ids.AppBskyFeedRepost
 type IndexedRepost = Selectable<DatabaseSchemaType['repost']>
@@ -72,17 +73,21 @@ const findDuplicate = async (
 
 const notifsForInsert = (obj: IndexedRepost) => {
   const subjectUri = new AtUri(obj.subject)
-  return [
-    {
-      did: subjectUri.host,
-      author: obj.creator,
-      recordUri: obj.uri,
-      recordCid: obj.cid,
-      reason: 'repost' as const,
-      reasonSubject: subjectUri.toString(),
-      sortAt: obj.indexedAt,
-    },
-  ]
+  // prevent self-notifications
+  const isSelf = subjectUri.host === obj.creator
+  return isSelf
+    ? []
+    : [
+        {
+          did: subjectUri.host,
+          author: obj.creator,
+          recordUri: obj.uri,
+          recordCid: obj.cid,
+          reason: 'repost' as const,
+          reasonSubject: subjectUri.toString(),
+          sortAt: obj.sortAt,
+        },
+      ]
 }
 
 const deleteFn = async (
@@ -132,8 +137,9 @@ export type PluginType = RecordProcessor<Repost.Record, IndexedRepost>
 export const makePlugin = (
   db: PrimaryDatabase,
   backgroundQueue: BackgroundQueue,
+  notifServer?: NotificationServer,
 ): PluginType => {
-  return new RecordProcessor(db, backgroundQueue, {
+  return new RecordProcessor(db, backgroundQueue, notifServer, {
     lexId,
     insertFn,
     findDuplicate,

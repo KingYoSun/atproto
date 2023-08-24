@@ -9,6 +9,7 @@ import DidSqlCache from './did-cache'
 import { BackgroundQueue } from './background'
 import { MountedAlgos } from './feed-gen/types'
 import { LabelCache } from './label-cache'
+import { NotificationServer } from './notifications'
 
 export class AppContext {
   constructor(
@@ -22,6 +23,7 @@ export class AppContext {
       labelCache: LabelCache
       backgroundQueue: BackgroundQueue
       algos: MountedAlgos
+      notifServer: NotificationServer
     },
   ) {}
 
@@ -57,6 +59,10 @@ export class AppContext {
     return this.opts.labelCache
   }
 
+  get notifServer(): NotificationServer {
+    return this.opts.notifServer
+  }
+
   get authVerifier() {
     return auth.authVerifier(this.idResolver, { aud: this.cfg.serverDid })
   }
@@ -69,6 +75,10 @@ export class AppContext {
     return auth.authOptionalVerifier(this.idResolver, {
       aud: this.cfg.serverDid,
     })
+  }
+
+  get authOptionalAccessOrRoleVerifier() {
+    return auth.authOptionalAccessOrRoleVerifier(this.idResolver, this.cfg)
   }
 
   get roleVerifier() {
