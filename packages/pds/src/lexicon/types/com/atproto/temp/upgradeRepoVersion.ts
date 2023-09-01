@@ -11,10 +11,8 @@ import { HandlerAuth } from '@atproto/xrpc-server'
 export interface QueryParams {}
 
 export interface InputSchema {
-  /** The handle or DID of the repo. */
-  repo: string
-  /** Compare and swap with the previous commit by cid. */
-  swapCommit?: string
+  did: string
+  force?: boolean
   [k: string]: unknown
 }
 
@@ -26,7 +24,6 @@ export interface HandlerInput {
 export interface HandlerError {
   status: number
   message?: string
-  error?: 'InvalidSwap' | 'ConcurrentWrites'
 }
 
 export type HandlerOutput = HandlerError | void

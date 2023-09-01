@@ -7,29 +7,35 @@ import { lexicons } from '../../../../lexicons'
 import { isObj, hasProp } from '../../../../util'
 import { CID } from 'multiformats/cid'
 import { HandlerAuth } from '@atproto/xrpc-server'
+import * as AppBskyFeedDefs from './defs'
 
-export interface QueryParams {}
+export interface QueryParams {
+  limit: number
+  cursor?: string
+}
 
-export interface InputSchema {
-  /** The handle or DID of the repo. */
-  repo: string
-  /** Compare and swap with the previous commit by cid. */
-  swapCommit?: string
+export type InputSchema = undefined
+
+export interface OutputSchema {
+  cursor?: string
+  feeds: AppBskyFeedDefs.GeneratorView[]
   [k: string]: unknown
 }
 
-export interface HandlerInput {
+export type HandlerInput = undefined
+
+export interface HandlerSuccess {
   encoding: 'application/json'
-  body: InputSchema
+  body: OutputSchema
+  headers?: { [key: string]: string }
 }
 
 export interface HandlerError {
   status: number
   message?: string
-  error?: 'InvalidSwap' | 'ConcurrentWrites'
 }
 
-export type HandlerOutput = HandlerError | void
+export type HandlerOutput = HandlerError | HandlerSuccess
 export type HandlerReqCtx<HA extends HandlerAuth = never> = {
   auth: HA
   params: QueryParams
