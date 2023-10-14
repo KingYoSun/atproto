@@ -98,7 +98,7 @@ const main = async () => {
     algos,
   })
   // separate db needed for more permissions
-  const migrateDb = bsky.ctx.db
+  const migrateDb = bsky.ctx.db.primary
 
   // Separate migration db in case migration changes some connection state that we need in the tests, e.g. "alter database ... set ..."
   if (cfg.migration) {
