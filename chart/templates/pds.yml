@@ -40,6 +40,7 @@ kind: Service
 metadata:
   name: {{ include "atproto.fullname" . }}-pds
   namespace: {{ .Values.namespace }}
+  labels: {{- include "atproto-pds.labels" . | nindent 4 }}
   annotations:
     dev.okteto.com/auto-ingress: 'true'
 spec:

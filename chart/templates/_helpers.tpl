@@ -31,7 +31,7 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Common labels
+Common labels(pds)
 */}}
 {{- define "atproto-pds.labels" -}}
 helm.sh/chart: {{ include "atproto.chart" . }}
@@ -43,7 +43,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Common labels
+Common labels(bsky)
 */}}
 {{- define "atproto-bsky.labels" -}}
 helm.sh/chart: {{ include "atproto.chart" . }}
@@ -67,7 +67,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Selector labels
+Selector labels(pds)
 */}}
 {{- define "atproto-pds.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "atproto.name" . }}-pds
@@ -75,7 +75,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}-pds
 {{- end }}
 
 {{/*
-Selector labels
+Selector labels(bsky)
 */}}
 {{- define "atproto-bsky.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "atproto.name" . }}-bsky

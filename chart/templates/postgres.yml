@@ -37,6 +37,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "atproto.fullname" . }}-postgres
+  labels: {{- include "atproto-postgres.labels" . | nindent 4 }}
   namespace: {{ .Values.namespace }}
 spec:
   type: ClusterIP

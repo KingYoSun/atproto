@@ -35,6 +35,7 @@ kind: Service
 metadata:
   name: {{ include "atproto.fullname" . }}-bsky
   namespace: {{ .Values.namespace }}
+  labels: {{- include "atproto-bsky.labels" . | nindent 4 }}
   annotations:
     dev.okteto.com/auto-ingress: 'true'
 spec:
