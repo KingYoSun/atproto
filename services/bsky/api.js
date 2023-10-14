@@ -98,10 +98,7 @@ const main = async () => {
     algos,
   })
   // separate db needed for more permissions
-  const migrateDb = new PrimaryDatabase({
-    url: env.dbMigratePostgresUrl,
-    schema: env.dbPostgresSchema,
-  })
+  const migrateDb = bsky.ctx.db
 
   // Separate migration db in case migration changes some connection state that we need in the tests, e.g. "alter database ... set ..."
   if (cfg.migration) {
