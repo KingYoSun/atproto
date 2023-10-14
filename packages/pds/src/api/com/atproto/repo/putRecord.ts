@@ -15,7 +15,19 @@ import { ConcurrentWriteError } from '../../../../services/repo'
 
 export default function (server: Server, ctx: AppContext) {
   server.com.atproto.repo.putRecord({
-    auth: ctx.accessVerifierCheckTakedown,
+    auth: ctx.authVerifier.accessCheckTakedown,
+    rateLimit: [
+      {
+        name: 'repo-write-hour',
+        calcKey: ({ auth }) => auth.credentials.did,
+        calcPoints: () => 2,
+      },
+      {
+        name: 'repo-write-day',
+        calcKey: ({ auth }) => auth.credentials.did,
+        calcPoints: () => 2,
+      },
+    ],
     handler: async ({ auth, input }) => {
       const {
         repo,

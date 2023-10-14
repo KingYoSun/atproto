@@ -14,31 +14,35 @@ import { DAY, HOUR } from '@atproto/common'
 import { ValidationError } from '@atproto/lexicon'
 import { PrimaryDatabase } from '../../db'
 import * as Post from './plugins/post'
+import * as Threadgate from './plugins/thread-gate'
 import * as Like from './plugins/like'
 import * as Repost from './plugins/repost'
 import * as Follow from './plugins/follow'
 import * as Profile from './plugins/profile'
 import * as List from './plugins/list'
 import * as ListItem from './plugins/list-item'
+import * as ListBlock from './plugins/list-block'
 import * as Block from './plugins/block'
 import * as FeedGenerator from './plugins/feed-generator'
 import RecordProcessor from './processor'
 import { subLogger } from '../../logger'
 import { retryHttp } from '../../util/retry'
-import { Labeler } from '../../labeler'
 import { BackgroundQueue } from '../../background'
 import { NotificationServer } from '../../notifications'
+import { AutoModerator } from '../../auto-moderator'
 import { Actor } from '../../db/tables/actor'
 
 export class IndexingService {
   records: {
     post: Post.PluginType
+    threadGate: Threadgate.PluginType
     like: Like.PluginType
     repost: Repost.PluginType
     follow: Follow.PluginType
     profile: Profile.PluginType
     list: List.PluginType
     listItem: ListItem.PluginType
+    listBlock: ListBlock.PluginType
     block: Block.PluginType
     feedGenerator: FeedGenerator.PluginType
   }
@@ -46,18 +50,20 @@ export class IndexingService {
   constructor(
     public db: PrimaryDatabase,
     public idResolver: IdResolver,
-    public labeler: Labeler,
+    public autoMod: AutoModerator,
     public backgroundQueue: BackgroundQueue,
     public notifServer?: NotificationServer,
   ) {
     this.records = {
       post: Post.makePlugin(this.db, backgroundQueue, notifServer),
+      threadGate: Threadgate.makePlugin(this.db, backgroundQueue, notifServer),
       like: Like.makePlugin(this.db, backgroundQueue, notifServer),
       repost: Repost.makePlugin(this.db, backgroundQueue, notifServer),
       follow: Follow.makePlugin(this.db, backgroundQueue, notifServer),
       profile: Profile.makePlugin(this.db, backgroundQueue, notifServer),
       list: List.makePlugin(this.db, backgroundQueue, notifServer),
       listItem: ListItem.makePlugin(this.db, backgroundQueue, notifServer),
+      listBlock: ListBlock.makePlugin(this.db, backgroundQueue, notifServer),
       block: Block.makePlugin(this.db, backgroundQueue, notifServer),
       feedGenerator: FeedGenerator.makePlugin(
         this.db,
@@ -72,7 +78,7 @@ export class IndexingService {
     return new IndexingService(
       txn,
       this.idResolver,
-      this.labeler,
+      this.autoMod,
       this.backgroundQueue,
       this.notifServer,
     )
@@ -80,12 +86,12 @@ export class IndexingService {
 
   static creator(
     idResolver: IdResolver,
-    labeler: Labeler,
+    autoMod: AutoModerator,
     backgroundQueue: BackgroundQueue,
     notifServer?: NotificationServer,
   ) {
     return (db: PrimaryDatabase) =>
-      new IndexingService(db, idResolver, labeler, backgroundQueue, notifServer)
+      new IndexingService(db, idResolver, autoMod, backgroundQueue, notifServer)
   }
 
   async indexRecord(
@@ -108,7 +114,7 @@ export class IndexingService {
       }
     })
     if (!opts?.disableLabels) {
-      this.labeler.processRecord(uri, obj)
+      this.autoMod.processRecord(uri, cid, obj)
     }
   }
 
@@ -138,24 +144,22 @@ export class IndexingService {
     const handle: string | null =
       did === handleToDid ? atpData.handle.toLowerCase() : null
 
-    if (actor && actor.handle !== handle) {
-      const actorWithHandle =
-        handle !== null
-          ? await this.db.db
-              .selectFrom('actor')
-              .where('handle', '=', handle)
-              .selectAll()
-              .executeTakeFirst()
-          : null
+    const actorWithHandle =
+      handle !== null
+        ? await this.db.db
+            .selectFrom('actor')
+            .where('handle', '=', handle)
+            .selectAll()
+            .executeTakeFirst()
+        : null
 
-      // handle contention
-      if (handle && actorWithHandle && did !== actorWithHandle.did) {
-        await this.db.db
-          .updateTable('actor')
-          .where('actor.did', '=', actorWithHandle.did)
-          .set({ handle: null })
-          .execute()
-      }
+    // handle contention
+    if (handle && actorWithHandle && did !== actorWithHandle.did) {
+      await this.db.db
+        .updateTable('actor')
+        .where('actor.did', '=', actorWithHandle.did)
+        .set({ handle: null })
+        .execute()
     }
 
     const actorInfo = { handle, indexedAt: timestamp }
@@ -165,6 +169,10 @@ export class IndexingService {
       .onConflict((oc) => oc.column('did').doUpdateSet(actorInfo))
       .returning('did')
       .executeTakeFirst()
+
+    if (handle) {
+      this.autoMod.processHandle(handle, did)
+    }
   }
 
   async indexRepo(did: string, commit?: string) {
@@ -330,6 +338,10 @@ export class IndexingService {
       .deleteFrom('actor_block')
       .where('creator', '=', did)
       .execute()
+    await this.db.db
+      .deleteFrom('list_block')
+      .where('creator', '=', did)
+      .execute()
     // posts
     const postByUser = (qb) =>
       qb
@@ -349,6 +361,10 @@ export class IndexingService {
       .where('post_embed_record.postUri', 'in', postByUser)
       .execute()
     await this.db.db.deleteFrom('post').where('creator', '=', did).execute()
+    await this.db.db
+      .deleteFrom('thread_gate')
+      .where('creator', '=', did)
+      .execute()
     // notifications
     await this.db.db
       .deleteFrom('notification')
