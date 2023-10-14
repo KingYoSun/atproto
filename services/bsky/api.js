@@ -103,6 +103,15 @@ const main = async () => {
     schema: env.dbPostgresSchema,
     poolSize: 2,
   })
+
+  // Separate migration db in case migration changes some connection state that we need in the tests, e.g. "alter database ... set ..."
+  if (cfg.migration) {
+    await migrationDb.migrateToOrThrow(cfg.migration)
+  } else {
+    await migrationDb.migrateToLatestOrThrow()
+  }
+  await migrationDb.close()
+
   const viewMaintainer = new ViewMaintainer(migrateDb)
   const viewMaintainerRunning = viewMaintainer.run()
 
@@ -126,6 +135,7 @@ const main = async () => {
 }
 
 const getEnv = () => ({
+  migration: process.env.BSKY_MIGRATION,
   port: parseInt(process.env.PORT),
   version: process.env.BSKY_VERSION,
   dbMigratePostgresUrl:

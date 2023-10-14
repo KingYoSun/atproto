@@ -39,6 +39,20 @@ const main = async () => {
   const periodicModerationActionReversalRunning =
     periodicModerationActionReversal?.run()
 
+  // Separate migration db on postgres in case migration changes some
+  // connection state that we need in the tests, e.g. "alter database ... set ..."
+  const migrationDb =
+    cfg.db.dialect === 'pg'
+      ? pds.Database.postgres({
+          url: cfg.db.url,
+          schema: cfg.db.schema,
+        })
+      : server.ctx.db
+  await migrationDb.migrateToLatestOrThrow()
+  if (migrationDb !== server.ctx.db) {
+    await migrationDb.close()
+  }
+
   await pds.start()
 
   httpLogger.info('pds is running')
