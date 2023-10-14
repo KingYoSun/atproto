@@ -23,3 +23,5 @@ data:
   PDS_BSKY_APP_VIEW_DID: {{ .Values.bsky_server_did }}
   PDS_BSKY_APP_VIEW_MODERATION: {{ .Values.pds_bsky_app_view_moderation }}
   PDS_RATE_LIMIT_ENABLED: {{ .Values.pds_rate_limit_enabled }}
+  LOG_ENABLED: "true"
+  LOG_LEVEL: {{ .Values.pds_log_level }}

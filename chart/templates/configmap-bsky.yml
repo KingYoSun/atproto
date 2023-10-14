@@ -17,3 +17,5 @@ data:
   DB_POOL_MAX_USES: "{{ .Values.pds_db_pool_max_uses }}"
   DB_POOL_IDLE_TIMEOUT_MS: "{{ .Values.pds_pool_idle_timeout_ms }}"
   LABELER_DID: {{ .Values.bsky_labeler_did }}
+  LOG_ENABLED: "true"
+  LOG_LEVEL: {{ .Values.bsky_log_level }}
