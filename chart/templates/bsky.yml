@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "atproto.fullname" . }}-bsky
+  namespace: {{ .Values.namespace }}
+  labels: {{- include "atproto-bsky.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "atproto-bsky.selectorLabels" . | nindent 6 }}
+  replicas: 1
+  template:
+    metadata:
+      labels: {{- include "atproto-bsky.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: atproto-bsky
+          image: '{{ .Values.bsky_imageRepo }}:{{ .Values.bsky_imageTag }}'
+          envFrom:
+            - configMapRef:
+                name: {{ include "atproto.fullname" . }}-bsky-env
+            - secretRef:
+                name: {{ include "atproto.fullname" . }}-bsky-env-secret
+          volumeMounts:
+            - name: atproto-bsky-blobs-cache-pvc
+              mountPath: {{ .Values.pds_blob_cache_loc }}
+          ports:
+            - containerPort: 2584
+      volumes:
+        - name: atproto-bsky-blobs-cache-pvc
+          persistentVolumeClaim:
+            claimName: atproto-pds-blobs-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "atproto.fullname" . }}-bsky
+  namespace: {{ .Values.namespace }}
+  annotations:
+    dev.okteto.com/auto-ingress: 'true'
+spec:
+  type: ClusterIP
+  ports:
+    - port: 2584
+      protocol: TCP
+      name: http
+  selector: {{- include "atproto-bsky.selectorLabels" . | nindent 4 }}

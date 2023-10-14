@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "atproto.fullname" . }}-bsky-env
+  namespace: {{ .Values.namespace }}
+data:
+  BSKY_VERSION: {{ .Values.bsky_version }}
+  NODE_ENV: {{ .Values.environment }}
+  PUBLIC_URL: {{ .Values.public_url }}
+  SERVER_DID: {{ .Values.bsky_server_did }}
+  FEED_GEN_DID: {{ .Values.feed_gen_did }}
+  DID_PLC_URL: {{ .Values.plc_url }}
+  BLOB_CACHE_LOC: {{ .Values.bsky_blob_cache_loc }}
+  DB_PRIMARY_POSTGRES_URL: postgresql://{{ .Values.db_user }}:{{ .Values.db_pass }}@{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local:5432/postgres
+  DB_PRIMARY_POOL_SIZE: "{{ .Values.pds_db_pool_size }}"
+  DB_POOL_SIZE: "{{ .Values.pds_db_pool_size }}"
+  DB_POOL_MAX_USES: "{{ .Values.pds_db_pool_max_uses }}"
+  DB_POOL_IDLE_TIMEOUT_MS: "{{ .Values.pds_pool_idle_timeout_ms }}"
+  LABELER_DID: {{ .Values.bsky_labeler_did }}

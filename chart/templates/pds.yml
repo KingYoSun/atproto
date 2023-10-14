@@ -1,32 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "atproto.fullname" . }}
+  name: {{ include "atproto.fullname" . }}-pds
   namespace: {{ .Values.namespace }}
-  labels: {{- include "atproto.labels" . | nindent 4 }}
+  labels: {{- include "atproto-pds.labels" . | nindent 4 }}
 spec:
   selector:
-    matchLabels: {{- include "atproto.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "atproto-pds.selectorLabels" . | nindent 6 }}
   replicas: 1
   template:
     metadata:
-      labels: {{- include "atproto.selectorLabels" . | nindent 8 }}
+      labels: {{- include "atproto-pds.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: atproto-pds
           image: '{{ .Values.pds_imageRepo }}:{{ .Values.pds_imageTag }}'
           envFrom:
             - configMapRef:
-                name: {{ include "atproto.fullname" . }}-env
+                name: {{ include "atproto.fullname" . }}-pds-env
             - secretRef:
-                name: {{ include "atproto.fullname" . }}-env-secret
+                name: {{ include "atproto.fullname" . }}-pds-env-secret
           volumeMounts:
             - name: atproto-pds-blobs-pvc
               mountPath: {{ .Values.pds_blobstore_loc }}
             - name: atproto-pds-blobs-tmp-pvc
               mountPath: {{ .Values.pds_blobstore_tmp }}
-            - name: atproto-pds-blobs-cache-pvc
-              mountPath: {{ .Values.pds_blob_cache_loc }}
           ports:
             - containerPort: 3000
       volumes:
@@ -36,14 +34,11 @@ spec:
         - name: atproto-pds-blobs-tmp-pvc
           persistentVolumeClaim:
             claimName: atproto-pds-blobs-tmp
-        - name: atproto-pds-blobs-cache-pvc
-          persistentVolumeClaim:
-            claimName: atproto-pds-blobs-cache
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "atproto.fullname" . }}
+  name: {{ include "atproto.fullname" . }}-pds
   namespace: {{ .Values.namespace }}
   annotations:
     dev.okteto.com/auto-ingress: 'true'
@@ -53,4 +48,4 @@ spec:
     - port: 3000
       protocol: TCP
       name: http
-  selector: {{- include "atproto.selectorLabels" . | nindent 4 }}
+  selector: {{- include "atproto-pds.selectorLabels" . | nindent 4 }}

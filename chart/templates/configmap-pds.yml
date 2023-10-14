@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "atproto.fullname" . }}-pds-env
+  namespace: {{ .Values.namespace }}
+data:
+  PDS_BLOBSTORE_DISK_LOCATION: {{ .Values.pds_blobstore_loc }}
+  PDS_BLOBSTORE_DISK_TMP_LOCATION: {{ .Values.pds_blobstore_tmp }}
+  PDS_DB_POSTGRES_URL: postgresql://{{ .Values.db_user }}:{{ .Values.db_pass }}@{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local:5432/postgres
+  PDS_DB_POSTGRES_MIGRATION_URL: postgresql://{{ .Values.db_user }}:{{ .Values.db_pass }}@{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local:5432/postgres
+  PDS_EMAIL_SMTP_URL: smtp://{{ .Values.pds_smtp_username }}:{{ .Values.pds_smtp_password }}@{{ .Values.pds_smtp_host }}
+  PDS_EMAIL_FROM_ADDRESS: {{ .Values.pds_no_reply_address }}
+  PDS_VERSION: {{ .Values.pds_version }}
+  PDS_DID_PLC_URL: {{ .Values.plc_url }}
+  PDS_INVITE_REQUIRED: {{ .Values.pds_invite_required }}
+  PDS_INVITE_INTERVAL: {{ .Values.pds_user_invite_interval }}
+  PDS_SERVICE_HANDLE_DOMAINS: {{ .Values.pds_available_user_domains }}
+  PDS_HOSTNAME: {{ .Values.pds_host_domain }}
+  PDS_DB_POSTGRES_POOL_SIZE: "{{ .Values.pds_db_pool_size }}"
+  PDS_DB_POSTGRES_POOL_MAX_USES: "{{ .Values.pds_db_pool_max_uses }}"
+  PDS_DB_POSTGRES_POOL_IDLE_TIMEOUT_MS: "{{ .Values.pds_pool_idle_timeout_ms }}"
+  PDS_BSKY_APP_VIEW_URL: {{ include "atproto.fullname" . }}-bsky.{{ .Values.namespace }}.svc.cluster.local:2584
+  PDS_BSKY_APP_VIEW_DID: {{ .Values.bsky_server_did }}
+  PDS_BSKY_APP_VIEW_MODERATION: {{ .Values.pds_bsky_app_view_moderation }}
+  PDS_RATE_LIMIT_ENABLED: {{ .Values.pds_rate_limit_enabled }}

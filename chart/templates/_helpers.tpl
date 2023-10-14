@@ -33,9 +33,21 @@ Create chart name and version as used by the chart label.
 {{/*
 Common labels
 */}}
-{{- define "atproto.labels" -}}
+{{- define "atproto-pds.labels" -}}
 helm.sh/chart: {{ include "atproto.chart" . }}
-{{ include "atproto.selectorLabels" . }}
+{{ include "atproto-pds.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Common labels
+*/}}
+{{- define "atproto-bsky.labels" -}}
+helm.sh/chart: {{ include "atproto.chart" . }}
+{{ include "atproto-bsky.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -57,9 +69,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "atproto.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "atproto.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+{{- define "atproto-pds.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "atproto.name" . }}-pds
+app.kubernetes.io/instance: {{ .Release.Name }}-pds
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "atproto-bsky.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "atproto.name" . }}-bsky
+app.kubernetes.io/instance: {{ .Release.Name }}-bsky
 {{- end }}
 
 {{/*
