@@ -12,6 +12,7 @@ data:
   BLOB_CACHE_LOC: {{ .Values.bsky_blob_cache_loc }}
   DB_PRIMARY_POSTGRES_URL: postgresql://{{ .Values.db_user }}:{{ .Values.db_pass }}@{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local:5432/postgres
   DB_PRIMARY_POOL_SIZE: "{{ .Values.pds_db_pool_size }}"
+  DB_POSTGRES_SCHEMA: "bsky"
   DB_POOL_SIZE: "{{ .Values.pds_db_pool_size }}"
   DB_POOL_MAX_USES: "{{ .Values.pds_db_pool_max_uses }}"
   DB_POOL_IDLE_TIMEOUT_MS: "{{ .Values.pds_pool_idle_timeout_ms }}"
