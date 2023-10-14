@@ -101,7 +101,6 @@ const main = async () => {
   const migrateDb = new PrimaryDatabase({
     url: env.dbMigratePostgresUrl,
     schema: env.dbPostgresSchema,
-    poolSize: 2,
   })
 
   // Separate migration db in case migration changes some connection state that we need in the tests, e.g. "alter database ... set ..."
@@ -110,7 +109,7 @@ const main = async () => {
   } else {
     await migrateDb.migrateToLatestOrThrow()
   }
-  await migrateDb.close()
+  // await migrateDb.close()
 
   const viewMaintainer = new ViewMaintainer(migrateDb)
   const viewMaintainerRunning = viewMaintainer.run()
