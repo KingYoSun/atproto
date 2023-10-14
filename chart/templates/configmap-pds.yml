@@ -6,8 +6,8 @@ metadata:
 data:
   PDS_BLOBSTORE_DISK_LOCATION: {{ .Values.pds_blobstore_loc }}
   PDS_BLOBSTORE_DISK_TMP_LOCATION: {{ .Values.pds_blobstore_tmp }}
-  PDS_DB_POSTGRES_URL: postgresql://{{ .Values.db_user }}:{{ .Values.db_pass }}@{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local:5432/atproto_pds_postgresql
-  PDS_DB_POSTGRES_MIGRATION_URL: postgresql://{{ .Values.db_user }}:{{ .Values.db_pass }}@{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local:5432/atproto_pds_postgresql
+  PDS_DB_POSTGRES_URL: postgresql://{{ .Values.db_user }}:{{ .Values.db_pass }}@{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local:5432/atproto_pds
+  PDS_DB_POSTGRES_MIGRATION_URL: postgresql://{{ .Values.db_user }}:{{ .Values.db_pass }}@{{ include "atproto.fullname" . }}-postgres.{{ .Values.namespace }}.svc.cluster.local:5432/atproto_pds
   DB_POSTGRES_SCHEMA: "pds"
   PDS_EMAIL_SMTP_URL: smtp://{{ .Values.pds_smtp_username }}:{{ .Values.pds_smtp_password }}@{{ .Values.pds_smtp_host }}
   PDS_EMAIL_FROM_ADDRESS: {{ .Values.pds_no_reply_address }}
