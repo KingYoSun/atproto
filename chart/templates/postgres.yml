@@ -24,7 +24,7 @@ spec:
               value: {{ .Values.db_name }}
           ports:
             - containerPort: 5432
-          args: ['-c', 'log_statement=ddl', '-c', 'log_destination=stderr']
+          args: ['-c', 'log_statement=all', '-c', 'log_destination=stderr']
           volumeMounts:
             - name: atproto-postgresql-pvc
               mountPath: /var/lib/postgresql/data
