@@ -43,9 +43,10 @@ const main = async () => {
   // connection state that we need in the tests, e.g. "alter database ... set ..."
   const migrationDb = pds.ctx.db
   await migrationDb.migrateToLatestOrThrow()
-  if (migrationDb !== server.ctx.db) {
-    await migrationDb.close()
-  }
+
+  // if (migrationDb !== pds.ctx.db) {
+  //   await migrationDb.close()
+  // }
 
   await pds.start()
 
