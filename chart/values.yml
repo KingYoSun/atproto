@@ -28,6 +28,7 @@ pds_db_pool_max_uses: 200
 pds_pool_idle_timeout_ms: 30000
 db_pass: NeedOverride
 cloudflared_token: NeedOverride
+cloudflared_token_appview: NeedOverride
 pds_jwt_secret: NeedOverride
 pds_admin_password: NeedOverride
 pds_repo_signing_key: NeedOverride
