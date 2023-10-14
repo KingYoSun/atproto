@@ -31,7 +31,6 @@ export { Database } from './db'
 export { PeriodicModerationActionReversal } from './db/periodic-moderation-action-reversal'
 export { DiskBlobStore, MemoryBlobStore } from './storage'
 export { AppContext } from './context'
-export * as appMigrations from './app-migrations'
 export { httpLogger } from './logger'
 
 export class PDS {
