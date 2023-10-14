@@ -24,7 +24,7 @@ spec:
             - name: atproto-bsky-blobs-cache-pvc
               mountPath: {{ .Values.bsky_blob_cache_loc }}
           ports:
-            - containerPort: 2584
+            - containerPort: 3000
       volumes:
         - name: atproto-bsky-blobs-cache-pvc
           persistentVolumeClaim:
@@ -41,7 +41,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 2584
+    - port: 3000
       protocol: TCP
       name: http
   selector: {{- include "atproto-bsky.selectorLabels" . | nindent 4 }}
