@@ -106,11 +106,11 @@ const main = async () => {
 
   // Separate migration db in case migration changes some connection state that we need in the tests, e.g. "alter database ... set ..."
   if (cfg.migration) {
-    await migrationDb.migrateToOrThrow(cfg.migration)
+    await migrateDb.migrateToOrThrow(cfg.migration)
   } else {
-    await migrationDb.migrateToLatestOrThrow()
+    await migrateDb.migrateToLatestOrThrow()
   }
-  await migrationDb.close()
+  await migrateDb.close()
 
   const viewMaintainer = new ViewMaintainer(migrateDb)
   const viewMaintainerRunning = viewMaintainer.run()
