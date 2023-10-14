@@ -71,7 +71,7 @@ Selector labels(pds)
 */}}
 {{- define "atproto-pds.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "atproto.name" . }}-pds
-app.kubernetes.io/instance: {{ .Release.Name }}-pds
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
@@ -79,7 +79,7 @@ Selector labels(bsky)
 */}}
 {{- define "atproto-bsky.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "atproto.name" . }}-bsky
-app.kubernetes.io/instance: {{ .Release.Name }}-bsky
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
@@ -87,7 +87,7 @@ Selector labels(postgres)
 */}}
 {{- define "atproto-postgres.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "atproto.name" . }}-postgres
-app.kubernetes.io/instance: {{ .Release.Name }}-postgres
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
