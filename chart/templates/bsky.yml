@@ -22,7 +22,7 @@ spec:
                 name: {{ include "atproto.fullname" . }}-bsky-env-secret
           volumeMounts:
             - name: atproto-bsky-blobs-cache-pvc
-              mountPath: {{ .Values.pds_blob_cache_loc }}
+              mountPath: {{ .Values.bsky_blob_cache_loc }}
           ports:
             - containerPort: 2584
       volumes:
