@@ -57,7 +57,13 @@ export abstract class BaseResolver {
     if (result === null) {
       throw new DidNotFoundError(did)
     }
-    return result
+    let document: DidDocument
+    if (typeof result == 'string') {
+      document = JSON.parse(result) as DidDocument
+    } else {
+      document = result
+    }
+    return document
   }
 
   async resolveAtprotoData(

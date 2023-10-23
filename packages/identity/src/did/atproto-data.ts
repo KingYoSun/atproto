@@ -2,14 +2,7 @@ import * as crypto from '@atproto/crypto'
 import { DidDocument, AtprotoData } from '../types'
 
 export const getDid = (doc: DidDocument): string => {
-  let document: DidDocument
-  if (typeof doc == 'string') {
-    document = JSON.parse(doc) as DidDocument
-  } else {
-    document = doc
-  }
-
-  const id = document.id
+  const id = doc.id
   if (typeof id !== 'string') {
     throw new Error(`No 'id' on document`)
   }
