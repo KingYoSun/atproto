@@ -4,7 +4,7 @@ import { DidDocument, AtprotoData } from '../types'
 export const getDid = (doc: DidDocument): string => {
   const id = doc.id
   if (typeof id !== 'string') {
-    throw new Error('No `id` on document')
+    throw new Error(`No 'id' on document: ${JSON.stringify(doc)}`)
   }
   return id
 }
