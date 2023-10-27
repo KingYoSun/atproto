@@ -98,7 +98,7 @@ const main = async () => {
     algos,
   })
   // separate db needed for more permissions
-  const migrateDb = bsky.ctx.db.primary
+  let migrateDb = bsky.ctx.db.primary
 
   // Separate migration db in case migration changes some connection state that we need in the tests, e.g. "alter database ... set ..."
   if (cfg.migration) {
@@ -108,7 +108,12 @@ const main = async () => {
   }
   // await migrateDb.close()
 
-  const viewMaintainer = new ViewMaintainer(migrateDb)
+  migrateDb = new PrimaryDatabase({
+    url: env.dbMigratePostgresUrl,
+    schema: env.dbPostgresSchema,
+    poolSize: 2,
+  })
+  const viewMaintainer = new ViewMaintainer(migrateDb, 1800)
   const viewMaintainerRunning = viewMaintainer.run()
 
   const periodicModerationActionReversal = new PeriodicModerationActionReversal(
